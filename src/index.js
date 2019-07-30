@@ -2,9 +2,10 @@ const express = require('express')
 
 const userRouter = require('./routers/userRouter')
 const taskRouter = require('./routers/taskRouter')
+const portt = require('./config/port')
 
 const app = express()
-const port = 2022
+const port = portt
 
 app.use(express.json())
 app.use(userRouter)

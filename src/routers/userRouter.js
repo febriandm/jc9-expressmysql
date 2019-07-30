@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt')
 const path = require('path')
 const fs = require('fs')
 const multer = require('multer')
+const mailVerify = require('../email/nodemailer')
 
 // __dirname: alamat folder file userRouter.js
 const rootdir = path.join(__dirname,'/../..')
@@ -46,7 +47,7 @@ router.post('/users', (req, res) => {
 
     // tanda tanya akan di ganti oleh variabel data
     const sql = `INSERT INTO users SET ?`
-    const sql2 = `SELECT id, name, email, verified FROM users WHERE id = ?`
+    const sql2 = `SELECT id, name, email, username, verified FROM users WHERE id = ?`
     const data = req.body
 
     // Cek apakah email valid
@@ -64,11 +65,17 @@ router.post('/users', (req, res) => {
             return res.send(err)
         }
 
+        
+
         // Read data by user id untuk di kirim sebagai respon
         conn.query(sql2, result1.insertId, (err, result2) => {
             if(err){
                 return res.send(err)
             }
+
+            var user = result2[0]
+
+            mailVerify(user)
 
             res.send(result2)
         })
@@ -101,14 +108,14 @@ router.post('/users/avatar', upstore.single('apatar'), (req, res) => {
 })
 
 // ACCESS IMAGE
-router.get('/users/avatar/:image', (req, res) => {
+router.get('/users/avatar/:imageName', (req, res) => {
     // Letak folder photo
     const options = {
         root: photosdir
     }
 
     // Filename / nama photo
-    const fileName = req.params.image
+    const fileName = req.params.imageName
 
     res.sendFile(fileName, options, function(err){
         if(err) return res.send(err)
@@ -147,7 +154,7 @@ router.delete('/users/avatar', (req, res)=> {
 
 // READ PROFILE
 router.get('/users/profile/:username', (req, res) => {
-    const sql = `SELECT username, name, email 
+    const sql = `SELECT username, name, email, avatar
                 FROM users WHERE username = ?`
     const data = req.params.username
 
@@ -160,7 +167,12 @@ router.get('/users/profile/:username', (req, res) => {
         // jika user tidak di temukan
         if(!user) return res.send('User not found')
 
-        res.send(user)
+        res.send({
+            username: user.username,
+            name : user.name,
+            email: user.email,
+            avatar: `localhost:${portt}/users/avatar/${user.avatar}`
+        })
     })
 })
 
@@ -183,6 +195,18 @@ router.patch('/users/profile/:uname', (req, res) => {
             // Kirim usernya dalam bentuk object
             res.send(result[0])
         })
+    })
+})
+
+// VERIFY USER
+router.get('/verify', (req, res) => {
+    const sql = `UPDATE users SET verified = true 
+                WHERE username = '${req.query.uname}'`
+
+    conn.query(sql, (err, result) => {
+        if(err) return res.send(err)
+
+        res.send('<h1>Verifikasi berhasil</h1>')
     })
 })
 
