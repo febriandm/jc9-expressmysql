@@ -1,14 +1,16 @@
 const express = require('express')
 
 const userRouter = require('./routers/userRouter')
+const taskRouter = require('./routers/taskRouter')
 
-const server = express()
+const app = express()
 const port = 2022
 
-server.use(express.json())
-server.use(userRouter)
+app.use(express.json())
+app.use(userRouter)
+app.use(taskRouter)
 
-server.listen(port, () => {
+app.listen(port, () => {
     console.log('Berhasil Running di port ' + port);
     
 })
