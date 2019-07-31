@@ -15,3 +15,7 @@ app.listen(port, () => {
     console.log('Berhasil Running di port ' + port);
     
 })
+
+app.get('/', (req,res) => {
+    res.send(`<h1>API sukses berjalan di PORT ${port}</h1>`)
+})
