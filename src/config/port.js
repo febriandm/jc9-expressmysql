@@ -1,3 +1,3 @@
-let port = process.env.portt || 2022
+let porrt = process.env.PORT || 2022
 
-module.exports=port
+module.exports=porrt
